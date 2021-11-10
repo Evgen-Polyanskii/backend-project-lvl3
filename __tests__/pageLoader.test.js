@@ -6,7 +6,6 @@ import prettier from 'prettier';
 import pageLoader from '../src/pageLoader.js';
 import { getFilePath, getFixture } from './utils.js';
 
-
 nock.disableNetConnect();
 
 const url = 'https://ru.hexlet.io/courses';
