@@ -1,19 +1,27 @@
 import fsp from 'fs/promises';
 import axios from 'axios';
 import process from 'process';
-
-const getFilePath = (page, dirname) => {
-  const pageURL = new URL(page);
-  const filename = `${pageURL.hostname}${pageURL.pathname}`
-    .replace(/[^a-zA-Z0-9]/g, '-');
-  return `${dirname}/${filename}.html`;
-};
+import { getImgSrcs, updateHtml } from './utils.js';
+import { getPathToHtmlFile, getPathToDirPage } from './PathsBuilder.js';
+import imgLoader from './imgLoader.js';
 
 const pageLoader = (pageURL, dirname = process.cwd()) => {
-  const filepath = getFilePath(pageURL, dirname);
+  const dirPage = getPathToDirPage(pageURL, dirname);
+  let html;
   return axios.get(pageURL)
-    .then((page) => fsp.writeFile(filepath, page.data))
-    .then(() => filepath)
+    .then((page) => {
+      html = page.data;
+      fsp.mkdir(dirPage);
+    })
+    .then(() => getImgSrcs(html))
+    .then((imagesSrc) => imgLoader(imagesSrc, pageURL, dirname))
+    .then((imgPaths) => updateHtml(html, imgPaths))
+    .then((updatedHtml) => {
+      const pathToHtmlFile = getPathToHtmlFile(pageURL, dirname);
+      fsp.writeFile(pathToHtmlFile, updatedHtml);
+      return pathToHtmlFile;
+    })
     .catch(console.log);
 };
+
 export default pageLoader;
