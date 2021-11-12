@@ -1,31 +1,30 @@
 import path from 'path';
 
-const changAddressToPath = (pageAddress) => pageAddress.replace(/[^a-zA-Z0-9]/g, '-');
+const getPathFromAddress = (pageAddress) => pageAddress.replace(/[^a-zA-Z0-9]/g, '-');
 
-const getPathToHtmlFile = (pageAddress, dirname) => {
-  const pageURL = new URL(pageAddress);
+const getPathToHtmlFile = (pageURL, dirname) => {
   const address = `${pageURL.hostname}${pageURL.pathname}`;
-  return `${dirname}/${changAddressToPath(address)}.html`;
+  return `${dirname}/${getPathFromAddress(address)}.html`;
 };
 
-const getPathToDirPage = (pageAddress, dirname) => {
-  const pageURL = new URL(pageAddress);
+const getPathToDirPage = (pageURL, dirname) => {
   const address = `${pageURL.hostname}${pageURL.pathname}`;
-  return `${dirname}/${changAddressToPath(address)}_files`;
+  return `${dirname}/${getPathFromAddress(address)}_files`;
 };
 
-const getAbsolutePathToImage = (src, pageAddress, dirname) => {
-  const imgPath = path.parse(src);
-  const dirPage = getPathToDirPage(pageAddress, dirname);
-  const pageURL = new URL(pageAddress);
-  return `${dirPage}/${changAddressToPath(`${pageURL.hostname}${imgPath.dir}`)}-${imgPath.base}`;
+const getAbsolutePathToFile = (url, dirPage) => {
+  const urlPath = path.parse(url.pathname);
+  const fileExt = urlPath.ext ? urlPath.ext : '.html';
+  const newPath = url.pathname.replace(fileExt, '');
+  const filepath = getPathFromAddress(`${url.hostname}${newPath}`);
+  return `${dirPage}/${filepath}${fileExt}`;
 };
 
-const getRelativePathToImage = (dirname, absolutePath) => absolutePath.replace(`${dirname}/`, '');
+const getRelativePathToFile = (dirPage, absolutePath) => absolutePath.replace(`${path.dirname(dirPage)}/`, '');
 
 export {
   getPathToHtmlFile,
   getPathToDirPage,
-  getAbsolutePathToImage,
-  getRelativePathToImage,
+  getAbsolutePathToFile,
+  getRelativePathToFile,
 };

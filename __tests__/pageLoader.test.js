@@ -15,7 +15,7 @@ let htmlAfterChanges;
 
 beforeAll(async () => {
   htmlBeforeChanges = await getFixture('before.html');
-  htmlAfterChanges = prettier.format(await getFixture('after.html'), { parser: 'html' });
+  htmlAfterChanges = await getFixture('after.html');
 });
 beforeEach(async () => {
   dir = await fsp.mkdtemp(path.join(os.tmpdir(), 'page-loader-'));
@@ -28,10 +28,19 @@ describe('Проверка pageLoader', () => {
       .reply(200, htmlBeforeChanges);
     nock('https://ru.hexlet.io')
       .get('/assets/professions/nodejs.png')
-      .reply(200, htmlBeforeChanges);
+      .reply(200);
+    nock('https://ru.hexlet.io')
+      .get('/packs/js/runtime.js')
+      .reply(200);
+    nock('https://ru.hexlet.io')
+      .get('/assets/application.css')
+      .reply(200);
+    nock('https://ru.hexlet.io')
+      .get(/\/courses/)
+      .reply(200);
     const filepath = getFilePath(url, dir);
     await expect(pageLoader(url, dir)).resolves.not.toThrow();
     const actual = await fsp.readFile(filepath, 'utf-8');
-    expect(prettier.format(actual, { parser: 'html' })).toEqual(htmlAfterChanges);
+    expect(prettier.format(actual, { parser: 'html' })).toEqual(prettier.format(htmlAfterChanges, { parser: 'html' }));
   });
 });
