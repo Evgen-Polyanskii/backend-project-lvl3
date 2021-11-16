@@ -14,14 +14,14 @@ beforeEach(async () => {
 });
 
 it('Проверка imgLoader', async () => {
-  const resources = ['/assets/professions/nodejs.png', 'https://ru.hexlet.io/packs/js/runtime.js'];
+  const resources = ['/assets/professions/nodejs.png', 'https://cdn2.hexlet.io/assets/menu.css'];
   const requestImg = nock('https://ru.hexlet.io')
     .get('/assets/professions/nodejs.png')
     .reply(200);
-  const requestScript = nock('https://ru.hexlet.io')
-    .get('/packs/js/runtime.js')
+  const requestScript = nock('https://cdn2.hexlet.io')
+    .get('/assets/menu.css')
     .reply(200);
   await resourcesLoader(resources, url, dir);
   expect(requestImg.isDone()).toBe(true);
-  expect(requestScript.isDone()).toBe(true);
+  expect(requestScript.isDone()).toBe(false);
 });

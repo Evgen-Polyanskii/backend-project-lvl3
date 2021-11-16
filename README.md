@@ -17,3 +17,5 @@ make link
 ```
 
 Пример работы PageLoader
+
+[![asciicast](https://asciinema.org/a/PDQL8BH7d0yDamjPnesGdCYyv.svg)](https://asciinema.org/a/PDQL8BH7d0yDamjPnesGdCYyv)

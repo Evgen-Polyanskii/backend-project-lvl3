@@ -1,36 +1,32 @@
 import fsp from 'fs/promises';
 import axios from 'axios';
 import process from 'process';
-import _ from 'lodash';
 import { getResources, updateHtml } from './utils.js';
 import { getPathToHtmlFile, getPathToDirPage } from './PathsBuilder.js';
 import resourcesLoader from './resourcesLoader.js';
-
-const filterDomain = (path, pageURL) => {
-  const urlResource = new URL(path, pageURL);
-  return urlResource.hostname.includes(pageURL.hostname);
-};
+import debug from './logger.js';
 
 const pageLoader = (pageAddress, dirname = process.cwd()) => {
   const pageURL = new URL(pageAddress);
+  debug('Адресс запрашиваемой страницы', pageAddress);
   const dirPage = getPathToDirPage(pageURL, dirname);
   let html;
+  debug(`Создаваемая директория для хранения файлов страницы ${dirPage}`);
   return axios.get(pageURL.href)
     .then((page) => {
       html = page.data;
       fsp.mkdir(dirPage);
     })
-    .then(() => {
-      const imgSrcs = getResources(html, 'img');
-      const linkHrefs = _.filter(getResources(html, 'link'), (path) => filterDomain(path, pageURL));
-      const scriptSrcs = _.filter(getResources(html, 'script'), (path) => filterDomain(path, pageURL));
-      return _.uniq([...imgSrcs, ...linkHrefs, ...scriptSrcs]);
-    })
+    .then(() => getResources(html))
     .then((resourcePaths) => resourcesLoader(resourcePaths, pageURL, dirPage))
-    .then((assetMapPaths) => updateHtml(html, assetMapPaths))
+    .then((assetMapPaths) => {
+      debug('Исходные и новые пути ресурсов %O', assetMapPaths);
+      return updateHtml(html, assetMapPaths);
+    })
     .then((updatedHtml) => {
       const pathToHtmlFile = getPathToHtmlFile(pageURL, dirname);
       fsp.writeFile(pathToHtmlFile, updatedHtml);
+      debug('Путь до html файла', pathToHtmlFile);
       return pathToHtmlFile;
     })
     .catch(console.log);

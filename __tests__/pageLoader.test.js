@@ -25,17 +25,13 @@ describe('Проверка pageLoader', () => {
   it('замена ссылок на изображения в html', async () => {
     nock('https://ru.hexlet.io')
       .get(/\/courses/)
-      .reply(200, htmlBeforeChanges);
-    nock('https://ru.hexlet.io')
+      .reply(200, htmlBeforeChanges)
       .get('/assets/professions/nodejs.png')
-      .reply(200);
-    nock('https://ru.hexlet.io')
+      .reply(200)
       .get('/packs/js/runtime.js')
-      .reply(200);
-    nock('https://ru.hexlet.io')
+      .reply(200)
       .get('/assets/application.css')
-      .reply(200);
-    nock('https://ru.hexlet.io')
+      .reply(200)
       .get(/\/courses/)
       .reply(200);
     const filepath = getFilePath(url, dir);

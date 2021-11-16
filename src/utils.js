@@ -9,9 +9,12 @@ const hrefAttrs = {
 
 const getPaths = ($, tag) => $(tag).map((i, el) => $(el).attr(hrefAttrs[tag])).toArray();
 
-const getResources = (html, tag) => {
+const getResources = (html) => {
   const $ = cheerio.load(html);
-  return _.filter([...getPaths($, tag)], (path) => !path.startsWith('data:'));
+  const imgSrcs = getPaths($, 'img');
+  const linkHrefs = getPaths($, 'link');
+  const scriptSrcs = getPaths($, 'script');
+  return _.filter(_.uniq([...imgSrcs, ...linkHrefs, ...scriptSrcs]), (path) => !path.startsWith('data:'));
 };
 
 const updateHtml = (html, assetMapPaths) => {
