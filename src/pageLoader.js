@@ -7,29 +7,30 @@ import resourcesLoader from './resourcesLoader.js';
 import debug from './logger.js';
 
 const pageLoader = (pageAddress, dirname = process.cwd()) => {
-  const pageURL = new URL(pageAddress);
-  debug('Адресс запрашиваемой страницы', pageAddress);
-  const dirPage = getPathToDirPage(pageURL, dirname);
+  debug('Address of the requested page', pageAddress);
+  let pageURL;
+  let dirPage;
   let html;
-  debug(`Создаваемая директория для хранения файлов страницы ${dirPage}`);
-  return axios.get(pageURL.href)
+  return axios.get(pageAddress)
     .then((page) => {
       html = page.data;
-      fsp.mkdir(dirPage);
+      pageURL = new URL(pageAddress);
+      dirPage = getPathToDirPage(pageURL, dirname);
+      debug(`Create page directory ${dirPage}`);
+      return fsp.mkdir(dirPage);
     })
     .then(() => getResources(html))
     .then((resourcePaths) => resourcesLoader(resourcePaths, pageURL, dirPage))
     .then((assetMapPaths) => {
-      debug('Исходные и новые пути ресурсов %O', assetMapPaths);
+      debug('Resource paths %O', assetMapPaths);
       return updateHtml(html, assetMapPaths);
     })
     .then((updatedHtml) => {
       const pathToHtmlFile = getPathToHtmlFile(pageURL, dirname);
       fsp.writeFile(pathToHtmlFile, updatedHtml);
-      debug('Путь до html файла', pathToHtmlFile);
+      debug('Path to the html file', pathToHtmlFile);
       return pathToHtmlFile;
-    })
-    .catch(console.log);
+    });
 };
 
 export default pageLoader;

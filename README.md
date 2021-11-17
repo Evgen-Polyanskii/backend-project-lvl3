@@ -19,3 +19,11 @@ make link
 Пример работы PageLoader
 
 [![asciicast](https://asciinema.org/a/PDQL8BH7d0yDamjPnesGdCYyv.svg)](https://asciinema.org/a/PDQL8BH7d0yDamjPnesGdCYyv)
+
+Пример работы PageLoader с Debug
+
+[![asciicast](https://asciinema.org/a/hlD8V6bi92b4bcniSss15tP1D.svg)](https://asciinema.org/a/hlD8V6bi92b4bcniSss15tP1D)
+
+Пример вывода ошибки при завершении выполнения программы
+
+[![asciicast](https://asciinema.org/a/HxImuAsNXm2rwEC7OoQWNSQLx.svg)](https://asciinema.org/a/HxImuAsNXm2rwEC7OoQWNSQLx)

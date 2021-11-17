@@ -12,6 +12,8 @@ const url = 'https://ru.hexlet.io/courses';
 let dir;
 let htmlBeforeChanges;
 let htmlAfterChanges;
+let filepath;
+let scope;
 
 beforeAll(async () => {
   htmlBeforeChanges = await getFixture('before.html');
@@ -19,12 +21,13 @@ beforeAll(async () => {
 });
 beforeEach(async () => {
   dir = await fsp.mkdtemp(path.join(os.tmpdir(), 'page-loader-'));
+  filepath = getFilePath(url, dir);
+  scope = nock('https://ru.hexlet.io');
 });
 
-describe('Проверка pageLoader', () => {
-  it('замена ссылок на изображения в html', async () => {
-    nock('https://ru.hexlet.io')
-      .get(/\/courses/)
+describe('pageLoader, positive cases', () => {
+  it('load page', async () => {
+    scope.get(/\/courses/)
       .reply(200, htmlBeforeChanges)
       .get('/assets/professions/nodejs.png')
       .reply(200)
@@ -34,9 +37,26 @@ describe('Проверка pageLoader', () => {
       .reply(200)
       .get(/\/courses/)
       .reply(200);
-    const filepath = getFilePath(url, dir);
     await expect(pageLoader(url, dir)).resolves.not.toThrow();
     const actual = await fsp.readFile(filepath, 'utf-8');
     expect(prettier.format(actual, { parser: 'html' })).toEqual(prettier.format(htmlAfterChanges, { parser: 'html' }));
+  });
+});
+describe('pageLoader, negative cases', () => {
+  it('load page: incorrect data entered', async () => {
+    await expect(pageLoader(' ', dir)).rejects.toThrow();
+  });
+  it.each([404, 500])('load page: status code %s', async (code) => {
+    scope.get(/\/courses/)
+      .reply(code);
+    await expect(pageLoader(url, dir)).rejects.toThrow(`Request failed with status code ${code}`);
+  });
+  it('load page: file system errors', async () => {
+    scope.get(/\/courses/)
+      .reply(200, htmlBeforeChanges)
+      .get(/\/courses/)
+      .reply(200, htmlBeforeChanges);
+    await expect(pageLoader(url, '/sys')).rejects.toThrow();
+    await expect(pageLoader(url, 'home/')).rejects.toThrow();
   });
 });

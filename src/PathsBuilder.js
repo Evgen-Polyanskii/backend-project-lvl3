@@ -1,6 +1,6 @@
 import path from 'path';
 
-const getPathFromAddress = (pageAddress) => pageAddress.replace(/[^a-zA-Z0-9]/g, '-');
+const getPathFromAddress = (pageAddress) => pageAddress.replace(/\W/g, '-');
 
 const getPathToHtmlFile = (pageURL, dirname) => {
   const address = `${pageURL.hostname}${pageURL.pathname}`;

@@ -13,7 +13,7 @@ beforeEach(async () => {
   dir = await fsp.mkdtemp(path.join(os.tmpdir(), 'page-loader-'));
 });
 
-it('Проверка imgLoader', async () => {
+it('imgLoader, positive case', async () => {
   const resources = ['/assets/professions/nodejs.png', 'https://cdn2.hexlet.io/assets/menu.css'];
   const requestImg = nock('https://ru.hexlet.io')
     .get('/assets/professions/nodejs.png')
