@@ -43,9 +43,6 @@ describe('pageLoader, positive cases', () => {
   });
 });
 describe('pageLoader, negative cases', () => {
-  it('load page: incorrect data entered', async () => {
-    await expect(pageLoader(' ', dir)).rejects.toThrow();
-  });
   it.each([404, 500])('load page: status code %s', async (code) => {
     scope.get(/\/courses/)
       .reply(code);

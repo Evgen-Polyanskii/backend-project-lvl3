@@ -4,12 +4,12 @@ const getPathFromAddress = (pageAddress) => pageAddress.replace(/\W/g, '-');
 
 const getPathToHtmlFile = (pageURL, dirname) => {
   const address = `${pageURL.hostname}${pageURL.pathname}`;
-  return `${dirname}/${getPathFromAddress(address)}.html`;
+  return path.join(dirname, `${getPathFromAddress(address)}.html`);
 };
 
 const getPathToDirPage = (pageURL, dirname) => {
   const address = `${pageURL.hostname}${pageURL.pathname}`;
-  return `${dirname}/${getPathFromAddress(address)}_files`;
+  return path.join(dirname, `${getPathFromAddress(address)}_files`);
 };
 
 const getAbsolutePathToFile = (url, dirPage) => {
@@ -17,7 +17,7 @@ const getAbsolutePathToFile = (url, dirPage) => {
   const fileExt = urlPath.ext ? urlPath.ext : '.html';
   const newPath = url.pathname.replace(fileExt, '');
   const filepath = getPathFromAddress(`${url.hostname}${newPath}`);
-  return `${dirPage}/${filepath}${fileExt}`;
+  return path.join(dirPage, `${filepath}${fileExt}`);
 };
 
 const getRelativePathToFile = (dirPage, absolutePath) => absolutePath.replace(`${path.dirname(dirPage)}/`, '');

@@ -27,3 +27,7 @@ make link
 Пример вывода ошибки при завершении выполнения программы
 
 [![asciicast](https://asciinema.org/a/HxImuAsNXm2rwEC7OoQWNSQLx.svg)](https://asciinema.org/a/HxImuAsNXm2rwEC7OoQWNSQLx)
+
+Пример работы pageLoader с отображением результата выполнения
+
+[![asciicast](https://asciinema.org/a/bAK4pOP0mXK2WpGrivY9JB06Z.svg)](https://asciinema.org/a/bAK4pOP0mXK2WpGrivY9JB06Z)
