@@ -1,46 +1,47 @@
 import fsp from 'fs/promises';
-import axios from 'axios';
+import path from 'path';
 import process from 'process';
 import Listr from 'listr';
-import { getResources, updateHtml } from './utils.js';
-import { getPathToHtmlFile, getPathToDirPage } from './PathsBuilder.js';
-import resourcesLoader from './resourcesLoader.js';
+import { updateHtml, load } from './utils.js';
+import { urlToHtmlFilename, urlToDirname, getAbsolutePath } from './PathsBuilder.js';
 import debug from './logger.js';
 
 const pageLoader = (pageAddress, dirname = process.cwd()) => {
   debug('Address of the requested page', pageAddress);
-  const tasks = new Listr([], { concurrent: true });
-  const pageURL = new URL(pageAddress);
-  const pathToHtmlFile = getPathToHtmlFile(pageURL, dirname);
-  const dirPage = getPathToDirPage(pageURL, dirname);
-  let html;
-  const loadedPage = axios.get(pageAddress);
-  tasks.add({ title: `Load ${pageAddress}`, task: () => loadedPage });
-  return loadedPage
+  let pageURL;
+  try {
+    pageURL = new URL(pageAddress);
+  } catch (e) {
+    throw Promise.reject(e);
+  }
+  const pathToHtmlFile = path.join(dirname, urlToHtmlFilename(pageURL));
+  const dirPage = urlToDirname(pageURL);
+  const pathToDirPage = path.join(dirname, dirPage);
+  debug(`Create page directory ${dirPage}`);
+  return fsp.mkdir(pathToDirPage, { recursive: true })
+    .then(() => load(pageURL.toString()))
     .then((page) => {
-      html = page.data;
-      const createDir = fsp.mkdir(dirPage);
-      debug(`Create page directory ${dirPage}`);
-      tasks.add({ title: 'Create page directory', task: () => createDir });
-      return createDir;
-    })
-    .then(() => {
-      const resources = getResources(html);
-      tasks.add({ title: 'Getting resources', task: () => resources });
-      return resources;
-    })
-    .then((resourcePaths) => {
-      const loadResources = resourcesLoader(resourcePaths, pageURL, dirPage);
-      tasks.add({ title: 'Download resources', task: () => loadResources });
-      return loadResources;
+      const { html, assetMapPaths } = updateHtml(page, pageURL, dirPage);
+      debug('Resource paths %O', assetMapPaths);
+      debug('Create html file', pathToHtmlFile);
+      return fsp.writeFile(pathToHtmlFile, html).then(() => assetMapPaths);
     })
     .then((assetMapPaths) => {
-      debug('Resource paths %O', assetMapPaths);
-      return updateHtml(html, assetMapPaths);
-    })
-    .then((updatedHtml) => {
-      tasks.add({ title: 'Create html file', task: () => fsp.writeFile(pathToHtmlFile, updatedHtml) });
-      debug('Path to the html file', pathToHtmlFile);
+      const promisesLoadResource = assetMapPaths.map(({ relativePath, uri }) => {
+        const absolutePath = getAbsolutePath(dirname, relativePath);
+        debug(`Get resources ${uri.toString()}`);
+        return load(uri.toString())
+          .then((response) => {
+            debug(`Create Resource file ${absolutePath}`);
+            return fsp.writeFile(absolutePath, response);
+          });
+      });
+      const tasks = new Listr([{
+        title: 'load',
+        task: () => Promise.allSettled(promisesLoadResource).then((promisesResult) => {
+          debug('Result of resource loading %O', promisesResult);
+        }),
+      }], { concurrent: true });
       return tasks.run();
     })
     .then(() => pathToHtmlFile);

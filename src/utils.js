@@ -1,33 +1,39 @@
 import cheerio from 'cheerio';
-import _ from 'lodash';
+import axios from 'axios';
+import { getRelativePath } from './PathsBuilder.js';
 
-const hrefAttrs = {
-  script: 'src',
-  link: 'href',
-  img: 'src',
+const load = (uri) => axios.get(uri, { responseType: 'arraybuffer' })
+  .then(({ data }) => data);
+
+const filterDomain = (path, pageURL) => {
+  const resourceURL = new URL(path, pageURL);
+  return resourceURL.hostname.includes(pageURL.hostname);
 };
 
-const getPaths = ($, tag) => $(tag).map((i, el) => $(el).attr(hrefAttrs[tag])).toArray();
-
-const getResources = (html) => {
+const updateHtml = (html, pageURL, dirPage) => {
   const $ = cheerio.load(html);
-  const imgSrcs = getPaths($, 'img');
-  const linkHrefs = getPaths($, 'link');
-  const scriptSrcs = getPaths($, 'script');
-  return _.filter(_.uniq([...imgSrcs, ...linkHrefs, ...scriptSrcs]), (path) => !path.startsWith('data:'));
+  const hrefAttrs = {
+    script: 'src',
+    link: 'href',
+    img: 'src',
+  };
+  const assetMapPaths = Object.entries(hrefAttrs).flatMap(([tag, attr]) => {
+    const localPaths = $(`${tag}[${attr}]`).toArray().filter((el) => {
+      const path = $(el).attr(attr);
+      return filterDomain(path, pageURL) && !path.startsWith('data:');
+    });
+    return localPaths.map((el) => {
+      const uriPath = $(el).attr(attr);
+      const uri = new URL(uriPath, pageURL);
+      const relativePath = getRelativePath(`${uri.hostname}${uri.pathname}`, dirPage);
+      $(el).attr(attr, relativePath);
+      return {
+        relativePath,
+        uri: uri.toString(),
+      };
+    });
+  });
+  return { html: $.html(), assetMapPaths };
 };
 
-const updateHtml = (html, assetMapPaths) => {
-  const $ = cheerio.load(html);
-  ['script', 'link', 'img'].map((tag) => $(tag)
-    .each((i, el) => {
-      const $el = $(el);
-      const path = $el.attr(hrefAttrs[tag]);
-      if (assetMapPaths[path] !== undefined) {
-        $el.attr(hrefAttrs[tag], assetMapPaths[path]);
-      }
-    }));
-  return $.html();
-};
-
-export { getResources, updateHtml };
+export { updateHtml, load };

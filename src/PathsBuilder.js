@@ -2,29 +2,27 @@ import path from 'path';
 
 const getPathFromAddress = (pageAddress) => pageAddress.replace(/\W/g, '-');
 
-const getPathToHtmlFile = (pageURL, dirname) => {
+const getPathTo = (pageURL) => {
   const address = `${pageURL.hostname}${pageURL.pathname}`;
-  return path.join(dirname, `${getPathFromAddress(address)}.html`);
+  return path.join(getPathFromAddress(address));
 };
 
-const getPathToDirPage = (pageURL, dirname) => {
-  const address = `${pageURL.hostname}${pageURL.pathname}`;
-  return path.join(dirname, `${getPathFromAddress(address)}_files`);
-};
+const urlToHtmlFilename = (pageURL) => `${getPathTo(pageURL)}.html`;
 
-const getAbsolutePathToFile = (url, dirPage) => {
-  const urlPath = path.parse(url.pathname);
-  const fileExt = urlPath.ext ? urlPath.ext : '.html';
-  const newPath = url.pathname.replace(fileExt, '');
-  const filepath = getPathFromAddress(`${url.hostname}${newPath}`);
+const urlToDirname = (pageURL) => `${getPathTo(pageURL)}_files`;
+
+const getRelativePath = (resourcesPath, dirPage) => {
+  const { dir, name, ext } = path.parse(resourcesPath);
+  const fileExt = ext || '.html';
+  const filepath = getPathFromAddress(path.join(`${dir}/${name}`));
   return path.join(dirPage, `${filepath}${fileExt}`);
 };
 
-const getRelativePathToFile = (dirPage, absolutePath) => absolutePath.replace(`${path.dirname(dirPage)}/`, '');
+const getAbsolutePath = (dirname, localPath) => path.join(dirname, localPath);
 
 export {
-  getPathToHtmlFile,
-  getPathToDirPage,
-  getAbsolutePathToFile,
-  getRelativePathToFile,
+  urlToHtmlFilename,
+  urlToDirname,
+  getAbsolutePath,
+  getRelativePath,
 };
