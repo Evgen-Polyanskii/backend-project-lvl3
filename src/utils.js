@@ -7,7 +7,7 @@ const load = (uri) => axios.get(uri, { responseType: 'arraybuffer' })
 
 const filterDomain = (path, pageURL) => {
   const resourceURL = new URL(path, pageURL);
-  return resourceURL.hostname.includes(pageURL.hostname);
+  return resourceURL.hostname === pageURL.hostname;
 };
 
 const updateHtml = (html, pageURL, dirPage) => {
