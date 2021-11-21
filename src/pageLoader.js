@@ -18,7 +18,7 @@ const pageLoader = (pageAddress, dirname = process.cwd()) => {
   const dirPage = urlToDirname(pageURL);
   const pathToDirPage = path.join(dirname, dirPage);
   debug(`Create page directory ${dirPage}`);
-  return fsp.mkdir(pathToDirPage, { recursive: true })
+  return fsp.mkdir(pathToDirPage)
     .then(() => load(pageURL.toString()))
     .then((page) => {
       const { html, assetMapPaths } = updateHtml(page, pageURL, dirPage);

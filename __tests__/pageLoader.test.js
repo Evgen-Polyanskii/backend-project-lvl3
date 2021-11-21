@@ -65,6 +65,7 @@ describe('Check pageLoader', () => {
         .get(/\/courses/)
         .reply(200, htmlBeforeChanges);
       await expect(pageLoader(url, '/sys')).rejects.toThrow();
+      await expect(pageLoader(url, `${dir}/home`)).rejects.toThrow();
     });
   });
 });
