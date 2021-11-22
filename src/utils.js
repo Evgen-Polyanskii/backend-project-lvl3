@@ -24,12 +24,12 @@ const updateHtml = (html, pageURL, dirPage) => {
     });
     return localPaths.map((el) => {
       const uriPath = $(el).attr(attr);
-      const uri = new URL(uriPath, pageURL);
-      const relativePath = getRelativePath(`${uri.hostname}${uri.pathname}`, dirPage);
+      const url = new URL(uriPath, pageURL);
+      const relativePath = getRelativePath(`${url.hostname}${url.pathname}`, dirPage);
       $(el).attr(attr, relativePath);
       return {
         relativePath,
-        uri: uri.toString(),
+        URL: url.toString(),
       };
     });
   });

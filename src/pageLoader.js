@@ -27,21 +27,15 @@ const pageLoader = (pageAddress, dirname = process.cwd()) => {
       return fsp.writeFile(pathToHtmlFile, html).then(() => assetMapPaths);
     })
     .then((assetMapPaths) => {
-      const promisesLoadResource = assetMapPaths.map(({ relativePath, uri }) => {
+      const promisesLoadResource = assetMapPaths.map(({ relativePath, URL }) => {
         const absolutePath = getAbsolutePath(dirname, relativePath);
-        debug(`Get resources ${uri.toString()}`);
-        return load(uri.toString())
-          .then((response) => {
-            debug(`Create Resource file ${absolutePath}`);
-            return fsp.writeFile(absolutePath, response);
-          });
+        debug(`Get resources ${URL}`);
+        return {
+          title: `load ${URL}`,
+          task: () => load(URL).then((response) => fsp.writeFile(absolutePath, response)),
+        };
       });
-      const tasks = new Listr([{
-        title: 'load',
-        task: () => Promise.allSettled(promisesLoadResource).then((promisesResult) => {
-          debug('Result of resource loading %O', promisesResult);
-        }),
-      }], { concurrent: true });
+      const tasks = new Listr(promisesLoadResource, { concurrent: true, exitOnError: false });
       return tasks.run();
     })
     .then(() => pathToHtmlFile);
