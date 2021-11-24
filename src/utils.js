@@ -1,3 +1,4 @@
+import fsp from 'fs/promises';
 import cheerio from 'cheerio';
 import axios from 'axios';
 import { getRelativePath } from './PathsBuilder.js';
@@ -17,7 +18,7 @@ const updateHtml = (html, pageURL, dirPage) => {
     link: 'href',
     img: 'src',
   };
-  const assetMapPaths = Object.entries(hrefAttrs).flatMap(([tag, attr]) => {
+  const assets = Object.entries(hrefAttrs).flatMap(([tag, attr]) => {
     const localPaths = $(`${tag}[${attr}]`).toArray().filter((el) => {
       const path = $(el).attr(attr);
       return filterDomain(path, pageURL) && !path.startsWith('data:');
@@ -33,7 +34,10 @@ const updateHtml = (html, pageURL, dirPage) => {
       };
     });
   });
-  return { html: $.html(), assetMapPaths };
+  return { html: $.html(), assets };
 };
 
-export { updateHtml, load };
+const makeDir = (pathToDirPage) => fsp.access(pathToDirPage)
+  .catch(() => fsp.mkdir(pathToDirPage));
+
+export { updateHtml, load, makeDir };

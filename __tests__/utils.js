@@ -6,9 +6,9 @@ const __filename = fileURLToPath(import.meta.url);
 
 const __dirname = path.dirname(__filename);
 
-const getFixturePath = (filename) => path.join(__dirname, '..', '__fixtures__', filename);
+const getFixturePath = (paths) => path.join(__dirname, '..', '__fixtures__', paths);
 const readFile = async (filePath) => fsp.readFile(filePath, 'utf8');
-const getFixture = (fileName) => readFile(getFixturePath(fileName));
+const getFixture = (paths) => readFile(getFixturePath(paths));
 
 const getFilePath = (page, dirname) => {
   const pageURL = new URL(page);
@@ -22,4 +22,4 @@ const hasFileExists = async (dirname, filename) => {
   return filesInDir.includes(filename);
 };
 
-export { getFilePath, getFixture, hasFileExists };
+export { getFilePath, getFixture, hasFileExists, getFixturePath };
