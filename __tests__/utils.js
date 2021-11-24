@@ -17,9 +17,4 @@ const getFilePath = (page, dirname) => {
   return `${dirname}/${filename}.html`;
 };
 
-const hasFileExists = async (dirname, filename) => {
-  const filesInDir = await fsp.readdir(dirname);
-  return filesInDir.includes(filename);
-};
-
-export { getFilePath, getFixture, hasFileExists, getFixturePath };
+export { getFilePath, getFixture };
